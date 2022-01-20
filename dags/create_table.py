@@ -38,3 +38,5 @@ with DAG(
             );
           """,
     )
+
+    print('Hello world!')
