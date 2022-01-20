@@ -1,10 +1,7 @@
-import datetime
+from datetime import datetime
 
 from airflow import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-
-# create_pet_table, populate_pet_table, get_all_pets, and get_birth_date are examples of tasks created by
-# instantiating the Postgres Operator
 
 # Default arguments 
 default_args = {
