@@ -13,7 +13,15 @@ default_args = {
     'email_on_retry': False
 }
 
-import_body = {"importContext": {"fileType": "csv", "uri": 'gs://gcp-data-eng-appr02-raw/user_purchase_no_headers.csv'}}
+import_body = {"importContext": {
+    "fileType": "csv",
+    "uri": 'gs://gcp-data-eng-appr02-raw/user_purchase_no_headers.csv',
+    "database": 'dbname',
+    "csvImportOptions": {
+    "table": 'apprenticeship.user_purchase',
+        },
+    "importUser": 'dbuser'
+    }}
 
 with DAG(
     dag_id='create_table',
