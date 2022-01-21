@@ -2,6 +2,7 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.google.cloud.operators.cloud_sql import CloudSQLImportInstanceOperator
 
 # Default arguments 
 default_args = {
@@ -11,6 +12,8 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False
 }
+
+import_body = {"importContext": {"fileType": "csv", "uri": 'gs://gcp-data-eng-appr02-raw/user_purchase_no_headers.csv'}}
 
 with DAG(
     dag_id='create_table',
@@ -39,4 +42,11 @@ with DAG(
           """,
     )
 
-    print('Hello world!')
+    sql_import_task = CloudSQLImportInstanceOperator(
+        task_id='sql_import_task',
+        project_id='gcp-data-eng-appr02-ba95f6e2',
+        body=import_body,
+        instance='data-bootcamp-8', 
+    )
+
+create_schema >> sql_import_task
