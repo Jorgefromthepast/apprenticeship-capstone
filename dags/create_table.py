@@ -54,7 +54,7 @@ with DAG(
         task_id='sql_import_task',
         project_id='gcp-data-eng-appr02-ba95f6e2',
         body=import_body,
-        instance='data-bootcamp-8', 
+        instance='data-bootcamp-9', 
     )
 
 create_schema >> sql_import_task
