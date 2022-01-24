@@ -15,7 +15,7 @@ default_args = {
 
 import_body = {"importContext": {
     "fileType": "csv",
-    "uri": 'gs://gcp-data-eng-appr02-raw/user_purchase_no_headers.csv',
+    "uri": 'gs://gcp-data-eng-appr02-raw-permissions/user_purchase_no_headers.csv',
     "database": 'dbname',
     "csvImportOptions": {
     "table": 'apprenticeship.user_purchase',
