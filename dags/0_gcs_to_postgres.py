@@ -33,9 +33,9 @@ with DAG(
     import_csv = CloudSQLImportInstanceOperator(
         task_id='import_csv',
         gcp_conn_id='google_cloud_default',
-        project_id={{ var.value.project_id }},
-        body={{ var.value.import_body }},
-        instance={{ var.value.instance }}, 
+        project_id="{{ var.value.project_id }}",
+        body="{{ var.value.import_body }}",
+        instance="{{ var.value.instance }}", 
     )
 
     create_table >> import_csv
