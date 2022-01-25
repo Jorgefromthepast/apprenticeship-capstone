@@ -2,8 +2,8 @@
 # Airflow DAG to create a table on a Postgres database and import a CSV file from GCS.
 
 from datetime import datetime
-
 from airflow import DAG
+from airflow.models import Variable
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.google.cloud.operators.cloud_sql import CloudSQLImportInstanceOperator
 
@@ -34,7 +34,7 @@ with DAG(
         task_id='import_csv',
         gcp_conn_id='google_cloud_default',
         project_id="{{ var.value.project_id }}",
-        body="{{ var.value.import_body }}",
+        body=Variable.get('import_body', deserialize_json = True),
         instance="{{ var.value.instance }}", 
     )
 
