@@ -28,7 +28,7 @@ with DAG(
         use_server_side_cursor=True,
         sql='{{ var.value.query }}',
         bucket='{{ var.value.staging_bucket }}',
-        filename='{{ var.value.filename_parquet }}',
+        filename='{{ var.value.filename_json }}',
         export_format='json'
     )
 
