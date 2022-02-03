@@ -29,7 +29,7 @@ with DAG(
         sql = '{{ var.value.query }}',
         bucket = '{{ var.value.staging_bucket }}',
         filename = '{{ var.value.filename_parquet }}',
-        export_format = 'parquet',
+        export_format='json',
         approx_max_file_size_bytes=1048576
     )
 
