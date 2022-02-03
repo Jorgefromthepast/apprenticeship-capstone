@@ -25,7 +25,7 @@ with DAG(
     dump_table = PostgresToGCSOperator(
         task_id='dump_table',
         postgres_conn_id = 'postgres_default',
-        use_server_side_cursor = False,
+        use_server_side_cursor = True,
         sql = '{{ var.value.query }}',
         bucket = '{{ var.value.staging_bucket }}',
         filename = '{{ var.value.filename_parquet }}',
