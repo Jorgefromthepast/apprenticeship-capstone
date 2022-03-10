@@ -26,9 +26,19 @@ with DAG(
     tags=['test']
     ) as dag:
 
-    create_external_table = BigQueryCreateExternalTableOperator(
-        task_id="create_external_table",
-        table_resource="{{ var.json.table_resource }}"
+    create_ext_table_logs = BigQueryCreateExternalTableOperator(
+        task_id="create_ext_table_logs",
+        table_resource=Variable.get("table_resource_logs", deserialize_json = True)
     )
 
-    create_external_table
+    create_ext_table_reviews = BigQueryCreateExternalTableOperator(
+        task_id="create_ext_table_reviews",
+        table_resource=Variable.get("table_resource_reviews", deserialize_json = True)
+    )
+
+    create_ext_table_user_purchase = BigQueryCreateExternalTableOperator(
+        task_id="create_ext_table_user_purchase",
+        table_resource=Variable.get("table_resource_user_purchase", deserialize_json = True)
+    )
+
+    [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase]
