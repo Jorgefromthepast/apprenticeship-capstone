@@ -28,7 +28,7 @@ with DAG(
 
     create_external_table = BigQueryCreateExternalTableOperator(
         task_id="create_external_table",
-        table_resource=Variable.get("table_resource", deserialize_json = True)
+        table_resource="{{ var.json.table_resource }}"
     )
 
     create_external_table
