@@ -19,16 +19,16 @@ default_args = {
 }
 
 with DAG(
-    dag_id='submit_jobs',
+    dag_id='build_dw',
     default_args=default_args,
-    schedule_interval="@once",
+    schedule_interval=None,
     catchup=False,
     tags=['test']
     ) as dag:
 
     create_external_table = BigQueryCreateExternalTableOperator(
         task_id="create_external_table",
-        table_resource="{{ var.json.table_resource }}"
+        table_resource=Variable.get("table_resource", deserialize_json = True)
     )
 
     create_external_table
