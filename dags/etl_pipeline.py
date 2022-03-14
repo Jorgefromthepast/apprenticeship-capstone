@@ -13,7 +13,8 @@ from airflow.providers.google.cloud.operators.dataproc import (
     DataprocDeleteClusterOperator
 )
 from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryCreateExternalTableOperator
+    BigQueryCreateExternalTableOperator,
+    BigQueryCreateEmptyTableOperator
 )
 
 # Default arguments
@@ -118,4 +119,36 @@ with DAG(
         table_resource=Variable.get("table_resource_user_purchase", deserialize_json = True)
     )
 
-    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase]
+    create_view_os = BigQueryCreateEmptyTableOperator(
+        task_id="create_view_os",
+        dataset_id="{{ var.value.dataset_id }}",
+        table_id="dim_os",
+        view=Variable.get("query_os_view", deserialize_json = True)
+    )
+
+    create_view_devices = BigQueryCreateEmptyTableOperator(
+        task_id="create_view_devices",
+        dataset_id="{{ var.value.dataset_id }}",
+        table_id="dim_devices",
+        view=Variable.get("query_devices_view", deserialize_json = True)
+    )
+
+    create_view_location = BigQueryCreateEmptyTableOperator(
+        task_id="create_view_location",
+        dataset_id="{{ var.value.dataset_id }}",
+        table_id="dim_location",
+        view=Variable.get("query_location_view", deserialize_json = True)
+    )
+    
+    create_view_browser = BigQueryCreateEmptyTableOperator(
+        task_id="create_view_browser",
+        dataset_id="{{ var.value.dataset_id }}",
+        table_id="dim_browser",
+        view=Variable.get("query_browser_view", deserialize_json = True)
+    )
+
+    create_table >> import_csv >> \
+    dump_table >> \
+    create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> \
+    [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase] >> \
+    [create_view_os, create_view_devices, create_view_location, create_view_browser]
