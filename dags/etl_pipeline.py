@@ -147,8 +147,4 @@ with DAG(
         view=Variable.get("query_browser_view", deserialize_json = True)
     )
 
-    create_table >> import_csv >> \
-    dump_table >> \
-    create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> \
-    [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase] >> \
-    [create_view_os, create_view_devices, create_view_location, create_view_browser]
+    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase] >> [create_view_os, create_view_devices, create_view_location, create_view_browser]
