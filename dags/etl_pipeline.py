@@ -12,6 +12,9 @@ from airflow.providers.google.cloud.operators.dataproc import (
     DataprocSubmitJobOperator,
     DataprocDeleteClusterOperator
 )
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryCreateExternalTableOperator
+)
 
 # Default arguments
 default_args = {
@@ -30,6 +33,8 @@ with DAG(
     tags=['capstone']
     ) as dag:
 
+    # GCS to Postgres
+
     create_table = PostgresOperator(
         task_id="create_table",
         postgres_conn_id="postgres_default",
@@ -44,6 +49,8 @@ with DAG(
         instance="{{ var.value.instance }}", 
     )
 
+    # Postgres to GCS
+
     dump_table = PostgresToGCSOperator(
         task_id='dump_table',
         postgres_conn_id='postgres_default',
@@ -53,6 +60,8 @@ with DAG(
         filename='{{ var.value.filename_json }}',
         export_format='json'
     )
+
+    # Log extraction and review classification
 
     create_cluster = DataprocCreateClusterOperator(
         task_id="create_cluster",
@@ -92,4 +101,21 @@ with DAG(
         trigger_rule='all_done'
     )
 
-    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster
+    # Data Warehouse building
+
+    create_ext_table_logs = BigQueryCreateExternalTableOperator(
+        task_id="create_ext_table_logs",
+        table_resource=Variable.get("table_resource_logs", deserialize_json = True)
+    )
+
+    create_ext_table_reviews = BigQueryCreateExternalTableOperator(
+        task_id="create_ext_table_reviews",
+        table_resource=Variable.get("table_resource_reviews", deserialize_json = True)
+    )
+
+    create_ext_table_user_purchase = BigQueryCreateExternalTableOperator(
+        task_id="create_ext_table_user_purchase",
+        table_resource=Variable.get("table_resource_user_purchase", deserialize_json = True)
+    )
+
+    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase]
