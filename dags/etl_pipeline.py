@@ -4,6 +4,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.models import Variable
+from airflow.operators.dummy import DummyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.google.cloud.operators.cloud_sql import CloudSQLImportInstanceOperator
 from airflow.providers.google.cloud.transfers.postgres_to_gcs import PostgresToGCSOperator
@@ -119,6 +120,10 @@ with DAG(
         table_resource=Variable.get("table_resource_user_purchase", deserialize_json = True)
     )
 
+    ext_tables_created = DummyOperator(
+        task_id = 'ext_tables_created'
+    )
+
     create_view_os = BigQueryCreateEmptyTableOperator(
         task_id="create_view_os",
         dataset_id="{{ var.value.dataset_id }}",
@@ -147,4 +152,4 @@ with DAG(
         view=Variable.get("query_browser_view", deserialize_json = True)
     )
 
-    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase] >> [create_view_os, create_view_devices, create_view_location, create_view_browser]
+    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster >> [create_ext_table_logs, create_ext_table_reviews, create_ext_table_user_purchase] >> ext_tables_created >> [create_view_os, create_view_devices, create_view_location, create_view_browser]
