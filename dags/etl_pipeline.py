@@ -7,6 +7,11 @@ from airflow.models import Variable
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.google.cloud.operators.cloud_sql import CloudSQLImportInstanceOperator
 from airflow.providers.google.cloud.transfers.postgres_to_gcs import PostgresToGCSOperator
+from airflow.providers.google.cloud.operators.dataproc import (
+    DataprocCreateClusterOperator,
+    DataprocSubmitJobOperator,
+    DataprocDeleteClusterOperator
+)
 
 # Default arguments
 default_args = {
@@ -49,4 +54,42 @@ with DAG(
         export_format='json'
     )
 
-    create_table >> import_csv >> dump_table
+    create_cluster = DataprocCreateClusterOperator(
+        task_id="create_cluster",
+        project_id="{{ var.value.project_id }}",
+        cluster_config=Variable.get("cluster_config", deserialize_json = True),
+        region="{{ var.value.region }}",
+        cluster_name="{{ var.value.cluster_name }}"
+    )
+
+    pyspark_job_log_reviews = DataprocSubmitJobOperator(
+        task_id="pyspark_job_log_reviews",
+        project_id="{{ var.value.project_id }}",
+        region="{{ var.value.region }}",
+        job={
+            "reference": {"project_id": "{{ var.value.project_id }}"},
+            "placement": {"cluster_name": "{{ var.value.cluster_name }}"},
+            "pyspark_job": {"main_python_file_uri": "{{ var.value.log_reviews_uri }}"},
+            }        
+    )
+
+    pyspark_job_classification = DataprocSubmitJobOperator(
+        task_id="pyspark_job_classification",
+        project_id="{{ var.value.project_id }}",
+        region="{{ var.value.region }}",
+        job={
+            "reference": {"project_id": "{{ var.value.project_id }}"},
+            "placement": {"cluster_name": "{{ var.value.cluster_name }}"},
+            "pyspark_job": {"main_python_file_uri": "{{ var.value.classification_uri }}"},
+            }        
+    )
+
+    delete_cluster = DataprocDeleteClusterOperator(
+        task_id="delete_cluster",
+        project_id="{{ var.value.project_id }}",
+        region="{{ var.value.region }}",
+        cluster_name="{{ var.value.cluster_name }}",
+        trigger_rule='all_done'
+    )
+
+    create_table >> import_csv >> dump_table >> create_cluster >> pyspark_job_log_reviews >> pyspark_job_classification >> delete_cluster
